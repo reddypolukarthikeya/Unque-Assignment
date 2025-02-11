@@ -40,7 +40,7 @@ jobs:
             mkdir -p ~/StudentandProfessor/test/my-app
             cd ~/StudentandProfessor/test/my-app
 
-            # Clone the repository if it doesn't exist
+            # Clone the repository if it doesn't exist 
             if [ ! -d ".git" ]; then
               git clone https://github.com/reddypolukarthikeya/test.git .
             fi
