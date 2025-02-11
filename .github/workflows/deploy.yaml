@@ -45,7 +45,7 @@ jobs:
               git clone https://github.com/reddypolukarthikeya/test.git .
             fi
 
-            # Pull the latest changes from the main branch
+            # Pull the latest changes from the main branch 
             git fetch origin main
             git reset --hard origin/main
 
