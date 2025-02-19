@@ -62,21 +62,25 @@ async function checkProfessorAvailability(professorId, newTime) {
     throw new Error("Professor not found.");
   }
 
-  // Debugging: Check what's stored in `professor.availability`
-  console.log("Professor Availability:", professor.availability);
+  console.log("Professor Availability:", professor.availability); // Debug
 
-  // Ensure `availability` is an array before using `.some()`
+  // Ensure availability is an array
   if (!Array.isArray(professor.availability)) {
     console.log("Availability is not an array.");
     return false;
   }
 
-  // Normalize and compare times
-  return professor.availability.some((slot) => {
-    const slotTime = new Date(slot.time).toISOString();
-    const requestTime = new Date(newTime).toISOString();
+  // Convert times to UTC and compare
+  const requestTimeUTC = new Date(newTime).toISOString();
+  
+  const availableSlots = professor.availability.map((slot) => ({
+    slotTime: new Date(slot.time).toISOString(),
+  }));
 
-    console.log(`Comparing Slot: ${slotTime} with Request: ${requestTime}`);
-    return slotTime === requestTime;
+  console.log("Available Slots:", availableSlots);
+
+  return availableSlots.some(({ slotTime }) => {
+    console.log(`Comparing Slot: ${slotTime} with Request: ${requestTimeUTC}`);
+    return slotTime === requestTimeUTC;
   });
 }
