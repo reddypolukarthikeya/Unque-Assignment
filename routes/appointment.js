@@ -6,10 +6,18 @@ const authenticateStudent = require('../middleware/authenticateStudent');
 
 router.put('/:appointmentId/postpone', authenticateStudent, async (req, res) => {
   const { appointmentId } = req.params;
-  const { newDate, newTime } = req.body;
-  const studentId = req.user.id; // Assuming the student's ID is stored in req.user.id after authentication
+  const { newTime } = req.body; // Expecting newTime in ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)
+  const studentId = req.user.id; // Authenticated student's ID
 
   try {
+    // Validate newTime format
+    if (!newTime || isNaN(Date.parse(newTime))) {
+      return res.status(400).json({ message: 'Invalid date format. Use ISO 8601 (YYYY-MM-DDTHH:mm:ssZ).' });
+    }
+
+    // Convert newTime to Date object
+    const newDateTime = new Date(newTime);
+
     // Find the appointment
     const appointment = await Appointment.findById(appointmentId);
     if (!appointment) {
@@ -21,25 +29,27 @@ router.put('/:appointmentId/postpone', authenticateStudent, async (req, res) => 
       return res.status(403).json({ message: 'Unauthorized action.' });
     }
 
-    // Check if the postponement is requested at least 24 hours in advance
+    // Ensure postponement is requested at least 24 hours in advance
     const currentDateTime = new Date();
-    const originalAppointmentDateTime = new Date(`${appointment.date}T${appointment.time}`);
+    const originalAppointmentDateTime = new Date(appointment.time); // Stored as a Date object
     const timeDifference = originalAppointmentDateTime - currentDateTime;
     const hoursDifference = timeDifference / (1000 * 60 * 60);
+
     if (hoursDifference < 24) {
       return res.status(400).json({ message: 'Postponement must be requested at least 24 hours in advance.' });
     }
 
-    // Check professor's availability at the new date and time
-    const isAvailable = await checkProfessorAvailability(appointment.professorId, newDate, newTime);
+    // Check professor's availability at the new time
+    const isAvailable = await checkProfessorAvailability(appointment.professorId, newDateTime);
     if (!isAvailable) {
       return res.status(400).json({ message: 'Professor is not available at the requested time.' });
     }
 
     // Update the appointment
-    appointment.date = newDate;
-    appointment.time = newTime;
-    appointment.status = 'Postponed';
+    appointment.previousTime = appointment.time; // Store the old time
+    appointment.time = newDateTime; // Save new time
+    appointment.status = 'postponed';
+
     await appointment.save();
 
     res.json({
@@ -47,27 +57,23 @@ router.put('/:appointmentId/postpone', authenticateStudent, async (req, res) => 
       appointment
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error.', error });
+    res.status(500).json({ message: 'Server error.', error: error.message });
   }
 });
 
 // Function to check professor's availability
-async function checkProfessorAvailability(professorId, date, time) {
-  // Implement logic to check if the professor is available at the given date and time
-  // This might involve querying the Professor's availability schedule from the database
-  // For simplicity, let's assume the function returns true if available, false otherwise
+async function checkProfessorAvailability(professorId, newDateTime) {
   const professor = await Professor.findById(professorId);
   if (!professor) {
     throw new Error('Professor not found.');
   }
 
-  // Example: Check if the professor has the requested time slot available on the given date
-  // This is a placeholder implementation; adjust it based on your actual data structure
-  const availability = professor.availability.find(
-    (slot) => slot.date === date && slot.time === time
+  // Check if the professor has the requested time slot available
+  const isAvailable = professor.availability.some(
+    (slot) => new Date(slot.time).toISOString() === newDateTime.toISOString()
   );
 
-  return !!availability;
+  return isAvailable;
 }
 
 module.exports = router;
