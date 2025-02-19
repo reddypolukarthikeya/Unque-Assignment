@@ -1,5 +1,5 @@
 import { Appointment } from "../models/appointment.js";
-import { User as Professor } from "../models/user.js"; // Assuming the Professor is stored in the User model
+import { Availability } from "../models/availability.js";
 
 export const postponeAppointment = async (req, res) => {
   const { appointmentId } = req.params;
@@ -54,29 +54,21 @@ export const postponeAppointment = async (req, res) => {
   }
 };
 
-// Function to check professor's availability
+// Function to check professor's availability using the Availability model
 async function checkProfessorAvailability(professorId, newTime) {
-  const professor = await Professor.findById(professorId).select("availability");
-  
-  if (!professor) {
-    throw new Error("Professor not found.");
-  }
-
-  console.log("Professor Availability:", professor.availability);
-
-  if (!Array.isArray(professor.availability)) {
-    console.log("Availability is not an array.");
-    return false;
-  }
-
   const requestTime = new Date(newTime).getTime();
 
-  return professor.availability.some((slot) => {
-    const startTime = new Date(slot.StartTime).getTime();
-    const endTime = new Date(slot.EndTime).getTime();
+  try {
+    const slot = await Availability.findOne({
+      professorId,
+      startTime: { $lte: newTime }, // New time should be after or at startTime
+      endTime: { $gt: newTime }, // New time should be before endTime
+    });
 
-    console.log(`Checking if ${requestTime} is between ${startTime} and ${endTime}`);
-    
-    return requestTime >= startTime && requestTime < endTime;
-  });
+    console.log(`Checking availability for ${newTime}:`, slot ? "Available" : "Not Available");
+    return !!slot; // Returns true if a slot exists, false otherwise
+  } catch (error) {
+    console.error("Error checking availability:", error.message);
+    return false;
+  }
 }
