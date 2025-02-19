@@ -26,7 +26,7 @@ app.use(cors());
 app.use("/users", userRoutes);
 app.use("/professor", professorRoutes);
 app.use("/general", generalRoutes);
-app.use("/appointments", appointmentRoutes); // Ensure this is added
+app.use("/appointment", appointmentRoutes); // Ensure this is added
 
 // Error Handling Middleware
 app.use(notFound);
