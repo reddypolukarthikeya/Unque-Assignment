@@ -57,14 +57,26 @@ export const postponeAppointment = async (req, res) => {
 // Function to check professor's availability
 async function checkProfessorAvailability(professorId, newTime) {
   const professor = await Professor.findById(professorId).select("availability");
+  
   if (!professor) {
     throw new Error("Professor not found.");
   }
 
+  // Debugging: Check what's stored in `professor.availability`
+  console.log("Professor Availability:", professor.availability);
+
   // Ensure `availability` is an array before using `.some()`
   if (!Array.isArray(professor.availability)) {
+    console.log("Availability is not an array.");
     return false;
   }
 
-  return professor.availability.some((slot) => new Date(slot.time).toISOString() === newTime.toISOString());
+  // Normalize and compare times
+  return professor.availability.some((slot) => {
+    const slotTime = new Date(slot.time).toISOString();
+    const requestTime = new Date(newTime).toISOString();
+
+    console.log(`Comparing Slot: ${slotTime} with Request: ${requestTime}`);
+    return slotTime === requestTime;
+  });
 }
