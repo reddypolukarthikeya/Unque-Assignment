@@ -1,6 +1,6 @@
 import express from "express";
 import { postponeAppointment } from "../controllers/appointment.js";
-import authenticateStudent from "../middleware/auth.js";
+import { authMiddleware as authenticateStudent } from "../middleware/auth.js";
 
 const router = express.Router();
 
