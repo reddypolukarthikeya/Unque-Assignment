@@ -27,7 +27,7 @@ export const postponeAppointment = async (req, res) => {
 
     // Ensure the postponement is at least 24 hours in advance
     const currentDateTime = new Date();
-    const hoursDifference = (appointment.time - currentDateTime) / (1000 * 60 * 60);
+    const hoursDifference = (new Date(appointment.time).getTime() - currentDateTime.getTime()) / (1000 * 60 * 60);
 
     if (hoursDifference < 24) {
       return res.status(400).json({ message: "Postponement must be requested at least 24 hours in advance." });
@@ -56,11 +56,15 @@ export const postponeAppointment = async (req, res) => {
 
 // Function to check professor's availability
 async function checkProfessorAvailability(professorId, newTime) {
-  const professor = await Professor.findById(professorId);
+  const professor = await Professor.findById(professorId).select("availability");
   if (!professor) {
     throw new Error("Professor not found.");
   }
 
-  // Check if any availability slot matches the requested time
+  // Ensure `availability` is an array before using `.some()`
+  if (!Array.isArray(professor.availability)) {
+    return false;
+  }
+
   return professor.availability.some((slot) => new Date(slot.time).toISOString() === newTime.toISOString());
 }
