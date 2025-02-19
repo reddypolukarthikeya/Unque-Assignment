@@ -1,9 +1,9 @@
 import express from "express";
 import { postponeAppointment } from "../controllers/appointment.js";
-import authenticateStudent from "../middleware/authenticateStudent.js";
+import authenticateStudent from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.put("/:appointmentId/postpone", authenticateStudent, postponeAppointment);
+router.put("/:appointmentId/postpone", authMiddleware, postponeAppointment);
 
 export default router;
