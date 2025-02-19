@@ -1,6 +1,6 @@
-import { authMiddleware } from "../middleware/auth.js"; // ✅ Correct
-import { postponeAppointment } from "../controllers/appointment.js";
 import express from "express";
+import { postponeAppointment } from "../controllers/appointment.js";
+import { authMiddleware } from "../middleware/auth.js"; // Ensure the correct import
 
 const router = express.Router();
 
