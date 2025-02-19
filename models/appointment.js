@@ -18,16 +18,12 @@ const appointmentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["booked", "completed", "cancelled", "postponed"], // Added "postponed" status
+      enum: ["booked", "completed", "cancelled"], // The appointment status
       default: "booked",
-    },
-    previousTime: {
-      type: Date, // Store the original time before postponement
-      default: null,
     },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
 
-const Appointment = mongoose.model('Appointment', appointmentSchema);
-export { Appointment };
+const Appointment =  mongoose.model('Appointment', appointmentSchema);
+export {Appointment}
