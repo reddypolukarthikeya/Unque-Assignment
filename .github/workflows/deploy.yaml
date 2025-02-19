@@ -37,14 +37,14 @@ jobs:
             set -x
 
             # Navigate to the application directory or create it
-            mkdir -p /home/ec2-user/StudentandProfessor/test/collegeAppointmentSystem/routes/
+            mkdir -p /home/ec2-user/StudentandProfessor/test/collegeAppointmentSystem/
 
-            cd /home/ec2-user/StudentandProfessor/test/collegeAppointmentSystem/routes/
+            cd /home/ec2-user/StudentandProfessor/test/collegeAppointmentSystem/
 
 
             # Clone the repository if it doesn't exist 
             if [ ! -d ".git" ]; then
-              git clone https://github.com/reddypolukarthikeya/test.git .
+              git clone https://github.com/reddypolukarthikeya/Unque-Assignment.git .
             fi
 
             # Pull the latest changes from the main branch 
