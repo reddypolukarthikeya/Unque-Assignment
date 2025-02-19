@@ -1,4 +1,4 @@
-import Appointment from "../models/appointment.js";
+import { Appointment } from "../models/appointment.js";
 import Professor from "../models/user.js"; // Assuming the Professor is stored in the User model
 
 export const postponeAppointment = async (req, res) => {
