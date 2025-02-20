@@ -25,14 +25,6 @@ export const postponeAppointment = async (req, res) => {
       return res.status(403).json({ message: "Unauthorized action." });
     }
 
-    // Ensure the postponement is at least 24 hours in advance
-    const currentDateTime = new Date();
-    const hoursDifference = (new Date(appointment.time).getTime() - currentDateTime.getTime()) / (1000 * 60 * 60);
-
-    if (hoursDifference < 24) {
-      return res.status(400).json({ message: "Postponement must be requested at least 24 hours in advance." });
-    }
-
     // Check professor's availability at the new time
     const isAvailable = await checkProfessorAvailability(appointment.professorId, newTimeDate);
     if (!isAvailable) {
