@@ -12,6 +12,11 @@ const appointmentSchema = new mongoose.Schema(
       ref: "User", // Reference to the User model (professor)
       required: true,
     },
+    wardenId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // Reference to the User model (professor)
+      required: true,
+    },
     time: {
       type: Date,
       required: true,
