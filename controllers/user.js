@@ -21,7 +21,7 @@ const register = async (req, res, next) => {
     }
     if (password !== confirmPassword) {
       return next(new HttpError("Passwords do not match", 422));
-    }
+    } 
 
     const salt = await bcrypt.genSalt(11);  // 11 rounds are good and protect against attacks
     const hashedPassword = await bcrypt.hash(password, salt);
