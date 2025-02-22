@@ -82,15 +82,14 @@ const getAvailableSlotsByDate = async (req, res, next) => {
 
 const bookAppointment = async (req, res, next) => {
   try {
-   
-    if (req.user.role === 'warden') {
-      const role1 = req.user.role;
-      const role2 = req.body.role;
+    const role1Id = req.user.id;
+    const role2Id = req.body.professorId;
+    const role1 = await User.findById(role1Id).select('role');
+    const role2 = await User.findById(role2Id).select('role');
+    if (!role1 || !role2) {
+      return next(new HttpError("User not found", 404));
     }
-      if (role1 !== role2) {
-        return next(new HttpError("You are not authorized to book appointments", 403));
-      }
-      else {
+      if (role1 === 'warden' && role2 == 'warden') {
         const { wardenId2, time } = req.body; // Professor's ID and time (T1) for booking
         const wardenId = req.user.id; // warden's ID from the authenticated user
 
