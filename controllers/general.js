@@ -82,62 +82,53 @@ const getAvailableSlotsByDate = async (req, res, next) => {
 
 const bookAppointment = async (req, res, next) => {
   try {
-    if (req.user.role !== 'warden') {
-      return res.status(400).json({ message: "Only warden can book appointments" });
+   
+    if (req.user.role === 'warden') {
+      const role1 = req.user.role;
+      const role2 = req.body.role;
     }
-    if (req.user.role == 'warden') 
-    {
-      const {wardenId, time1} = req.body;
-      const wardenId2 = req.user.id;
-      const formattedTime1 = moment(time1).utc().toDate(); // Convert time to UTC Date object
+      if (role1 !== role2) {
+        return next(new HttpError("You are not authorized to book appointments", 403));
+      }
+      else {
+        const { wardenId2, time } = req.body; // Professor's ID and time (T1) for booking
+        const wardenId = req.user.id; // warden's ID from the authenticated user
 
-    // professor has available slots during the provided time
-    const availability1 = await Availability.findOne({
-      wardenId: new mongoose.Types.ObjectId(wardenId),
-      startTime: { $lte: formattedTime1 }, // Check if the time is greater than or equal to startTime
-      endTime: { $gte: formattedTime1 },   // Check if the time is less than or equal to endTime
-    });
+        const formattedTime = moment(time).utc().toDate(); // Convert time to UTC Date object
 
+         // professor has available slots during the provided time
+        const availability = await Availability.findOne({
+        wardenId: new mongoose.Types.ObjectId(wardenId),
+        startTime: { $lte: formattedTime }, // Check if the time is greater than or equal to startTime
+        endTime: { $gte: formattedTime },   // Check if the time is less than or equal to endTime
+        });
 
-    // Log the data for debugging
-    console.log('Formatted Time:', formattedTime1);
-    console.log('Availability:', availability1);
+        // Creating the appointment
+      const appointment = new Appointment({
+      studentId: new mongoose.Types.ObjectId(studentId),
+      professorId: new mongoose.Types.ObjectId(professorId),
+      time: formattedTime, // Use formatted time
+      });
 
-    if (!availability1) {
-      return next(new HttpError("Selected time is not available for booking", 400));
-    }
+      await appointment.save();
+      // Format the time using moment.js for response
+    const formattedAppointmentTime = moment.utc(appointment.time).format('MMMM Do YYYY, h:mm:ss a');
 
-    // Check if the warden already has a booking for this time
-    const existingAppointment1 = await Appointment.findOne({
-      wardenId2: new mongoose.Types.ObjectId(wardenId2),
-      wardenId: new mongoose.Types.ObjectId(wardenId),
-      time: formattedTime,
-    });
-
-    if (existingAppointment) {
-      return next(new HttpError("You already have an appointment for this time", 400));
-    }
-
-    // Creating the appointment
-    const appointment1 = new Appointment({
-      wardenId: new mongoose.Types.ObjectId(wardenId2),
-      time1: formattedTime1, // Use formatted time
-    });
-
-    await appointment.save();
-
-    // Format the time using moment.js for response
-    const formattedAppointmentTime1 = moment.utc(appointment.time).format('MMMM Do YYYY, h:mm:ss a');
-
-    res.status(201).json({
+      res.status(201).json({
       message: 'Appointment booked successfully',
       appointment: {
-        wardenId2: appointment.wardenId2,
-        wardenId: appointment.wardenId,
-        time: formattedAppointmentTime1, // Return formatted time
-        status: appointment.status,
-      }
-    });
+      wardenId: appointment.wardenId,
+      wardenId2: appointment.wardenId2,
+      time: formattedAppointmentTime, // Return formatted time
+      status: appointment.status,
+        },
+      });
+    }
+    } catch (error) {
+    console.error("Error booking appointment:", error);
+    return next(new HttpError("Failed to book appointment", 500));
+  }
+    
     const { professorId, time } = req.body; // Professor's ID and time (T1) for booking
     const studentId = req.user.id; // Student's ID from the authenticated user
 
@@ -195,11 +186,6 @@ const bookAppointment = async (req, res, next) => {
         status: appointment.status,
       },
     });
-  } catch (error) {
-    console.error("Error booking appointment:", error);
-    return next(new HttpError("Failed to book appointment", 500));
-  }
-  }
 };
 
   const getStudentAppointments = async (req, res, next) => {
